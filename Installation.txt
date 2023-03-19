@@ -1,0 +1,23 @@
+# OPEN THIS FOLDER IN VSCODE 
+# THEN OPEN A NEW TERMINAL IN VSCODE
+
+Step 1: First create a virtual environment (for windows users only)
+
+# 👇️ create virtual environment
+-> "python -m venv venv"
+
+# 👇️ activate on Windows (cmd.exe)
+-> "venv\Scripts\activate.bat"
+
+# 👇️ activate on Windows (PowerShell)
+-> "venv\Scripts\Activate.ps1"
+
+Step 2: Now Run the following command for installing all packages
+
+-> "pip install -r requirements.txt"
+
+Step 2: Serving the app
+
+-> "python manage.py runserver"
+
+Step 3: Now you can check it by clicking the url.

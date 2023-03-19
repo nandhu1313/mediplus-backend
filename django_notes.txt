@@ -1,0 +1,1065 @@
+# <-- PART 1 - Fundamentals -->
+
+1. pip3 install pipenv -- install pipenv using pip3
+
+1.1 * pip3 install virtualenv (alternative way for using virtual environment)
+    * virtualenv env
+    * source env/bin/activate --> to activate
+    * deactivate --> to deactivate
+
+2. pipenv install django -- install django using pipenv
+    * We installed django inside a virtual environment.
+    * We got Pipfile and Pipfile.lock
+    * Pipfile is like a package.json in JavaScript projects.
+
+3. pipenv shell -- to activate a virtual machine in project folder
+
+4. type django-admin to see all sub commands of it.
+    * First we will be using "django-admin startproject name ."
+
+5. python3 manage.py runserver -- for starting development server
+
+6. configure vscode terminal
+    * open command palette
+    * search python interpreter
+    * select the venv that we created earlier
+    * for that type pipenv --venv on terminal
+    * copy the path you got and add "/bin/python" to it
+    * paste that inside interpreter path and enter
+    * after this venv will be automatically activated
+      when you open a vscode terminal.
+
+7. creating our app
+    * django project is a combination of different apps
+    * there are some default installed apps like "admin"
+    * check it in settings.py -> installed_apps list
+    * in that list, we don't need session app.
+    * because it is an old convention to store temp user data on server
+    * so delete that app.
+    * now create our own app using "python3 manage.py startapp name".
+    * and register it in the settings.py -> installed apps -> app name.
+    
+8. views
+    * view function takes a request and returns a response
+    * request handler
+    * create a function of any name with a parameter "request"
+    * this function is gonna get maped with a url
+    * we can do anything inside the function.
+
+9. mapping url with view function
+    * create urls.py file inside the app
+    * from django.urls import path function
+    * from . (current folder) import views module (file)
+    * create an array named "urlpatterns" and call the path() function inside
+    * 1st argument is route and second is it's view function
+    * don't call the view function, just pass a reference.
+
+    * every app is gonna have it's own url configuration
+    * we need to import all of them in the main urls.py module of project
+    * for including different urls module in it, import include function
+    * from django.urls
+    * then add a new path function to urlpatterns
+    * 1st argument is path and as 2nd call include function
+    * and pass the app's urls module as argument in ''.
+    * include('appname.urls')
+
+10. templates
+    * create a folder named templates in our app
+    * and store all html files (templates) in it
+    * now edit the view function we created
+    * instead of returning HttpResponse, return the render function
+    * it's already imported from django.shortcuts
+    * 1st argument of render function is the same "request" object of our view function
+    * 2nd is the template name in ''.
+    * 'home.html'
+
+    * for passing data to our template file, add 3rd argument to our render function
+    * 3rd argument is dictionary
+    * in template, use {{}} and put the name of the key inside
+    * value of that key will gonna get printed there.
+
+    * for using if, for loops etc in templates, use {% %}
+    * eg: {% if name %} {% else %} {% endif %}
+
+    * Django is mostly used for creating API
+    * so no need to use these django templates
+
+10.1 more about templates
+    * using css and js
+    * create a folder named static in root directory
+    * inside static create folders css, js, img
+    * add below line to settings.py
+    * STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+    * create base.html (main file)
+    * {% load static %} - put this on top
+    * inside head create <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    * inside body create a hole or block to fill with contents ->
+    *   {% block content %}
+        {% endblock %}
+    * create home.html 
+    * {% extends 'base.html' %} - put this on top
+    * then {% block content %}
+            <!-- html code for home -->
+           {% endblock %}
+
+11. debugging
+    * open the debugging panel of vscode
+    * for the first time, we need to create a launch.json file
+    * choose django
+    * edit launch.json and add one more argument after "runserver"
+    * "9000". so that it won't clash with our port 8000 dev server
+    * now create a break point in the file we need to debug
+    * so the debuging starts from that line.
+    * then click the play button of debugging panel.
+
+    * -- another way to debug django --
+    * search for django debug toolbar on google
+    * pipenv install django-debug-toolbar -- for installing it
+    * add it to the installed apps list
+    * name is "debug_toolbar"
+    * add the url also into the main urls module of project
+    * path('__debug__/', include('debug_toolbar.urls')),
+    * add middleware (on the top)
+    * "debug_toolbar.middleware.DebugToolbarMiddleware",
+    * configure internal ip
+    * INTERNAL_IPS = [
+        # ...
+        "127.0.0.1",
+        # ...
+    ]
+    * debug toolbar will appear in the browser (if html is complete)
+
+# <-- PART 2 - Data Models -->
+
+1. creating a model
+    * go to models.py file
+    * models module is imported from django.db
+    * create a class (model) that inherits Model class of models module
+    * that class is going to be a new table
+    * create the fields (attributes) with desired types present in models
+    * add a field option like primary_key etc.
+    * there might be required arguments for some types
+    * if you have doubt, check django website
+
+    * choices (you can have multiple options for a charfield value)
+    * OneToOneField -- to implement one to one relationship between two models
+    * arguments are 1) model class name 2) on_delete=
+    * ForiegnKey -- implements one to many relationships 
+    * ManyToManyField -- implements many to many relationships
+    * Gerneric Relationships (between models of two apps)
+    * use ContentType for that
+    * if we have a type of table and an id, we can find a record
+    * from django.contrib.contenttypes.models import ContentType
+    * from django.contrib.contenttypes.fields import GenericForeignKey
+    * using GenericForeignKey we will get the actual product object.
+
+    * use slugs with products (for search engine optimisation)
+
+# <-- PART 3 - Databases -->
+
+1. python3 manage.py makemigrations -- creates a .py file in migrations folder
+
+2. python3 manage.py migrate -- converts code into tables and columns
+
+3. metadata
+    * search django metadata on google
+    * create an inside class "Meta" in our model class
+    
+4. undo last migrations
+    * "python3 manage.py migrate app_name migration_number"
+    * delete the migration from migrations folder
+    * also change the model class's code
+    * if you are using git, reset the head with previous commit
+
+5. installing mysql
+    * go to mysql.com
+    * head towards community downloads
+    * download mysql community server v8.0.18 (macos high sierra)
+    * download mysql workbench (gui tool) v8.0.15
+    * jetbrain's datagrip is another gui tool (but paid - crack it)
+    * connect gui tool with mysql server using server password
+    * create the database before connecting it with django
+
+    * pipenv install mysqlclient
+    * there might be an error installing mysqlclient
+    * install mysql community server v8.0.18 and stop server after installation
+    * then try installing mysqlclient again
+    * if the error continues, 
+    * python3 -m pip install mysql-client
+    * try this
+    
+    * after installing go to settings.py
+    * edit DATABASE dictionary
+    * default engine will be 'django.db.backends.sqlite3'
+    * change that to 'django.db.backends.mysql'
+    * NAME : database name
+    * HOST : localhost
+    * USER : root
+    * PASSWORD : the password of mysql server
+
+    * after this runserver
+    * if error occurs, like mysqlclient is not installed
+    * pip3 install pymysql
+    * then edit __init__.py in project folder (that contains settings.py)
+    * add these lines
+
+    import sys
+    sys.path.insert(0,"/Users/anandh/.local/share/virtualenvs/Django_Course-GqMBgAy_/lib/python3.10/site-packages")
+    import pymysql
+    pymysql.install_as_MySQLdb()
+
+    * the path is where we installed pymysql (here it is in virtual env folder)
+
+    * again check runserver
+    * if no errors, run migrations and check mysql db if tables are created
+
+6. running custom sql queries
+     
+    * make an empty migration first
+    * python3 manage.py makemigration appname --empty
+    * open that migration
+    * see the operations array
+    * inside that create instance of RunSQL class present in migrations
+    * migrations.RunSQL()
+    * use triple qoutes for typing multiple lines
+    * RunSQL(""" """, """ """)
+    * we have two arguments for RunSQL
+    * first -> for upgrading db 
+    * second -> for downgrading db
+    * if you don't provide downgrading query, 
+    * then we can't undo that migration in future (so necessary)
+
+    eg: RunSQL(""" INSERT INTO tablename (column)
+                   VALUES ('something') """, 
+               """ DELETE FROM tablename
+                   WHERE column='something' """)
+
+    * so we provided two queries, one for creating and one for deleting the same record
+    * then migrate
+    * for undo this migration, migrate with previous number migration
+    * done 
+
+7. inserting dummy data into db
+    * visit mockaroo.com
+    * there we can produce dummy data for db
+    * and download it in any format (eg: .sql)
+    * fill the fields with our table's column names and type
+    * then select sql format, fill table name, then download
+
+# <-- PART 4 - Django ORM (object relational mapper) -->
+
+    * used for querying and manipulating data
+    * we don't need to run an sql query,
+    * then iterate the result with a loop,
+    * assign the values of each columns to a variable or key in an object,
+    * like in php
+    * we don't need to do all that.
+    * django ORM will help us to avoid those steps
+
+    * django migrations, the model class, all are part of ORM
+    * in some complex situations, we might need to write sql codes of our own
+    
+1. managers and query sets (.objects)
+    
+    * ModelName.objects -> this returns a manager object
+    * All django models have this object attribute
+    * manager is like a remote control with some buttons in it
+    * which we can use to manage the database
+    
+    * we have some methods in this attribute
+    * all() -> pulling out all the objects in a table
+    * get() -> to get a single object
+    * filter() -> for filtering data
+    * most of these methods returns a query set, not the actual object
+
+    * "query_set = ModelName.object.all()"
+    
+    * query set contains all the queries needed to perform that task on db
+    * at some point django will evaluate the query set 
+    * and generates the right sql statement, and sends to db
+    * this happens under a few scenarios ->
+
+    1) while itterating over a query set. eg: "for item in query_set"
+    
+    * you can check the debug toolbar -> sql section in browser
+    * while iterating over a query set, django will create the sql statements
+    * click sel button to see the response from db
+
+    2) while we convert query_set into a list. eg: "list(query_set)"
+
+    3) while accesing any elements. eg: "query_set[0]"
+
+    * so query set are lazy, there are evaluvated only when it is needed
+    * reason for this is, 
+    * we can use query set for building complex queries
+    * eg: "query_set.filter().filter().order_by()"
+    * this will return a new query set
+    * and evaluated when we try to iterate over them
+    * memory efficient too
+
+    * some methods doesn't returns a query set, instead they directly returns value
+    * like object.count() method
+    * this returns the number of records in the table
+    * the get() method also returns a single object
+    * not a query set
+
+2. retrieving objects
+
+    * all() method returns all the records in the form of query set
+    * eg: "query_set = ModelName.objects.all()"
+
+    * get() method returns a single object
+    * using an id, get(id=2)
+    * using pk, get(pk=1) # primary key
+    * using pk, we don't need to check the primary key manually
+    * if primary key is id, name, cart_number etc, django automatically finds it
+    * so better to use pk, if you are gonna retriev using primary key
+    * get() method doesn't returns a query set
+    * it returns a single object directly
+    * eg: "item = ModelName.objects.get(pk=3)"
+
+    * get() throws an exception if it coudn't find the result
+    * like get(pk=0), there is no record with pk = 0
+    * this throws an exception 
+    * we need to handle it using try except block
+    * first import the type of exception on the top
+    * from django.core.exceptions import ObjectDoesNotExist
+    * then
+
+    try:
+        product = Product.objects.get(pk=0)
+    except ObjectDoesNotExist:
+        pass # in real world, send a message to user
+
+    * there is a better way, we can avoid all these steps
+    * use the filter(pk=0) method, that returns a query set
+    * use first() method on filter() method 
+    * if the record doesn't exist, first() will return none, so no error
+    * filter(pk=0).exist() -> returns true if object exists, else false
+
+3. filtering objects
+
+    * use query_set = Model.objects.filter(column_name=value)
+    * this is straight forward
+    * this returns a query set
+    * filter(column_name__gt=20) -> greater than 20
+    * we cannot use < > these symbols here
+    * __gt, __lt, __gte (greater than or equal to) -> they are called lookups
+    * for finding more of this, visit queryset api reference - django
+    * another useful lookup is "range", eg: price__range=(20, 40) 
+    * use tuple for providing two values in range
+
+    * after recieving query_set, convert it as a list and pass it to template via dic
+    * return render(request, 'hello.html', {'products': list(query_set)})
+    * then iterate it using a for loop inside jinja template
+
+    * contains lookup type
+    * for checking if a column record contains specific key
+    * syntax: filter(column_name__contains='key')
+    * eg: filter(title__contains='coffee')
+    * # __contains lookup type is case sensitve
+    * so use icontains -> filter(title__icontains='coffee')
+    * i means case insensitive
+    * __startswith
+    * __endswith 
+    * and a lot more at queryset api site
+    
+    * filtering dates
+    * syntax: filter(column_name__year=2022)
+    * eg: filter(last_update__year=2021)
+    * __year, __month, __date, __seconds etc
+
+    * isnull lookup type
+    * eg: filter(description__isnull=True)
+    * returns all items with null or no description
+
+4. complex filtering using Q object
+
+    * Q is class present in 
+    * Q is used, when we need to combine two sql WHERE conditions
+    * using OR 
+    
+    * for performing AND,
+    * 1) filter().filter()
+    * 2) filter(argument1, argument2)
+    * this will return object that satisfies both these conditions
+    * that is AND
+
+    * for performing OR, we need Q class
+    * from django.db.models import Q
+    * then inside filter(), call constructor of Q
+    * inside constructor, pass the condition as an argument
+    * use multiple Qs and seperate them with bitwise | or operator
+    * done
+    * eg: filter(Q(id__lt=20) | Q(price__gt=200))
+    * eg: filter(Q(id__lt=20) | ~Q(price__gt=200)) -> ~ means not
+    * price not greater than 200
+    * check debugtoolbar for seeing sql query with OR
+    * we can also use & between Qs, but it's verbose
+    * use chain filtering etc for AND
+
+5. comparing values of two fields/columns
+
+    * eg: we need to get products where
+    * the price and discount values comes true
+    * in a business point of view, this doesn't make sense
+    * just an example
+    * price and discounts are fileds or columns in products table
+
+    * filter(price= F('discount'))
+    * we need to use F object for one of the fileds
+    * filter(price= discount) -> this is not going to work
+    * F means filed
+    * just like Q class, import it from models
+    * we can also use field lookups inside F object
+    * filter(price= F('discount__id'))
+    * __id means, the id of corresponding discount
+
+6. sorting 
+
+    * query_set = Product.objects.order_by('title')
+    * this will arrange items in accending order of their titles
+    * this also returns a query set
+    * order_by('-title') will sort in decending order
+
+    * order_by('unit_price', '-title') 
+    * this will sort items in increasing order of price,
+    * and if there are items with same price,
+    * those items will be sorted in decending order of their title
+    * this is how two arguments work
+
+    * order_by('-title').reverse() this will reverse decending to accending
+    * we can call order_by() after a filter()
+    * because order_by can be used on qs methods, filter also returns a queryset
+    * check all qs methods in query set api site
+
+    * # order_by('unit_price')[0] 
+    * orders in order of price increase,
+    * and selects the first result
+    * this will return a single object, so name variables accordingly
+    * we can simply use 
+    * # earliest('unit_price')
+    * for achieving the same thing
+    * it will sort it with price, and selects the first element
+    * # latest('unit_price')
+    * sorts in decending order, and selects first
+
+7. limiting results
+
+    * we don't need to retirew all 1000 records at same time, 
+    * we will divide it into many and shows in different pages
+    * for that, we can use python's array slicing syntax
+    * query_set = Product.objects.all()[:5]
+    * this will return first 5 records at 0,1,2,3,4
+    * query_set = Product.objects.all()[5:10]
+    * this will return 5 records starting from index 5 to 10
+    * that is 5,6,7,8,9
+
+8. selecting some fields only
+
+    * instead of selection everything from a table,
+    * we can select some specific columns only
+    * using values(), objects.values('id', 'title')
+    * this will only retirews the id and title, ignores all remaining field values
+    * objects.values('id', 'title', 'collection__title')
+    * here collection and product are related with primary key
+    * each product belongs to a collection
+    * so collection__title retrives the title of collection,
+    * which a product is related with (by forign key)
+    * values() returns a dictionary instead of product instance
+    * another method, values_list() returns a tuple
+    * values(argument).distinct() -> will removes records that gets repeats
+    * or having same values.
+
+    # important excersise solution
+    * queryset = Product.objects.filter(
+        id__in=OrderItem.objects.values('product_id').distinct())
+
+    * this will selects all the product_id in orderitem table,
+    * then selects all products in product table that having the selected ids
+    * our aim was to select all ordered items
+    * orderitem table contains a foriegn key field, product_id
+    * which is the ids of products in product table
+    * so we needed to select all products with this id
+
+    * we can also use only() instead of values()
+    * only() returns an instance of product ins tead of a dictionary
+    * defer() is opposite of only()
+    * defer('id') -> selects all fields except id
+    * # but be careful with only() and defer()
+    * because, eg: we have only('title', 'id')
+    * but in template, we tries to render the price of that product
+    * and the price was not selected by only()
+    * in that case, it is going to sent seperate queries,
+    * as many times as the loop iterates
+    * if there was 1000 products selected, 1000 sql query is also sent
+    * for getting the price field, and that takes a long time, app crashes
+    * so be careful with only()
+    * # values() doesn't have this problem
+    * because it returns a dictionary instead of instance
+    * and if there is no such field in the dictionary,
+    * django will simply ignores price
+
+9. selecting related objects
+
+    * suppose we need to display collection/category of each product
+    * with the product's title
+    * and we didn't fetched collection while retreving all products
+    * queryset = Product.objects.all()
+    * we can manaully instruct django to load collection also inside the template
+    * just like we loaded price, that is not retrieved with only()
+    * as before, this is going to sent a huge, seperate queries, for each product
+    * and takes time
+    * so we need to preload all related fields of product at first
+    * queryset = Product.objects.select_related('fieldWeWantToReload').all()
+    * # select_related()
+    * here: queryset = Product.objects.select_related('collection').all()
+    * collection is the foriegn key
+
+    * if we have a manytomany field
+    * # prefetch_related()
+    * use this instead of select_related()
+    * when we don't have a foriegn key in the target model
+    * but it is related with another model, and the 2nd model has a foriegn key
+    * connected to 1st model
+    * so there is a fk in 2nd model, but not in 1st one, and we targets 1st one
+    * at this moment, use prefetch
+    * django autmotically creates the reverse relationship, use that with prefetch
+    * we can also use both these at same time
+    * so preload foriegn keys as well as manytomany fields
+    * objects.prefetch_related().select_related()
+    * in template, {{ product.collection.title }}
+    * and {{ product.promotion.title }}
+
+    # important excersise solution
+    * queryset = Order.objects.prefetch_related(
+        'orderitem_set__product').select_related('customer').order_by('-placed_at')[:5]
+
+    * this is to get the last 5 orders,
+    * the customer who made this order and items in the order
+    * using select_related('customer') we fetched the detailes of customer 
+    * who made the particular order
+    * using prefetch_related('orderitem_set__product') we are fetching
+    * the order products also
+    * but Order model doesn't has a foriegn key named product
+    * OrderItem model has a filed named order (fk)
+    * so django automatically creates a reverse relationship also
+    * that means there is a field named "orderitem_set" in Order model
+    * OrderItem as orderitem and a "_set" (this is how django names it)
+    * thus we can connect with OrderItem model, it contains field called product
+    * from there we need to access the ordered product
+    * for that use __product (product - name of fk in OrderItem model)
+    * so orderitem_set__product
+    * put this inside the method and fetch product
+
+10. aggregating objects (perform maths operations)
+
+    * sometimes we need find avg of product's price etc
+    * at that moment we needs perform maths operations
+    * for that we need to use aggregate method
+    * implement like this ->
+    * result = Product.objects.aggregate(//pass an aggregate object here)
+    * aggregate returns a dictionary
+    * from django.db.models.aggregates import Count, Max, Avg, Sum
+    * Count, Max, Avg, Sum all these are aggregate classes
+    * Count('description')
+    * this will count number of records that has description and returns it
+
+    * result = Product.objects.aggregate(count=Count('id'),min_price=Min('unit_price'))
+    * <h4>{{ result }}</h4>
+    * output: {'count': 1000, 'min_price': Decimal('1.06')}
+    * so it is a dictionary
+    * aggregate() can be used with queryset functions eg: filter()
+
+11. Annotating Objects
+    * we can add additional attributes/columns to table while quering them
+    pass (please cover this topic again)
+
+12. Calling Database Function
+    pass
+
+13. Grouping data
+    pass
+
+14. Expression Wrapper
+    pass
+
+15. Querying Generic Relationships
+    pass
+
+16. Custom Managers
+    pass
+
+17. QuerySet Cache (Optimization Technique)
+
+    * queryset = Product.objects.all()
+    * list(queryset)
+    * at this moment, django will generate the query and execute it in db
+    * but this is a costly operations
+    * reading from disk is slow comparing with reading from memory
+    * so once, list(queryset) we do this
+    * django stores result as cache
+    * later when we do the same steps, django won't read it from db, 
+    * instead reads from queryset cache.
+
+    * queryset = Product.objects.all()
+      queryset[0]
+      list(queryset)
+    * this time, caching won't work
+    * django will send two seperate queries
+    * because, we need to load all data into cache first.
+    * then retrewing single data from that cache is possible
+    * if that data is absent in cache, then we need to retriew it from db
+    * that's the problem!
+
+18. Creating Objects (Inserting)
+
+    * one way ->
+    * product = Product()
+      product.title = 'MyProduct'
+      product.save()
+    * first we create an object of the model
+    * then access all atttributes/columns with that object
+    * and call save() method
+
+    * second way ->
+    * Product.objects.create(title = 'ObjectProduct')
+    * by using objects manager
+    * and create() method
+    * arguments are the column names and it's values
+
+19. Updating Objects
+
+    * Updating is same as creation, but add id to object
+    * that's all
+    * product = Product(pk=2)
+      product.title = 'SecondProduct'
+      product.save()
+    * # but we have a problem here
+    * we have product.price also
+    * but we are updating title only
+    * at this moment, price is not in memoery, so django set it as null
+    * so existing price value maybe replaced by null (data loss)
+    * for avoiding this, we need to load the product into memory first, then update
+    * product = Product.objects.get(pk=2)
+      product.title = 'SecondProduct'
+      product.save()
+    * this might be a performance issue (not all time)
+
+    * If we need to implement an optimised solution instead of this
+    * use objects.update()
+    * Product.objects.filter(pk=2).update(title='SecondProduct')
+
+20. Deleting object
+
+    * one way ->
+    * product = Product(pk=3)
+      product.delete()
+
+    * second way ->
+    * Product.objects.filter(pk=3).delete()
+    * eg 2: Product.objects.filter(pk__gt=3).delete()
+
+21. Transactions
+
+    * order = Order()
+      order.customer_id = 1
+      order.save()
+
+      item = OrderItem()
+      item.order = order
+      item.product_id = 1
+      item.quantity = 1
+      item.unit_price = 10
+      item.save()
+
+    * In this case, suppose item cannot be saved because of an error
+    * but order was inserted into db
+    * there is no logic of placing an order without any order items
+    * So we need wrap it inside a transaction
+
+    * first from django.db import transaction
+    * we have a method called transaction.atomic()
+    * which we can use as a decorator/contextmanager to the target view function
+    * @transaction.atomic()
+      def view_function(request):
+        pass
+    * now the entire view function is wrapped using a transaction
+    
+    * in some cases, we don't need to wrap everything inside a transaction
+    * only need to wrap some code of the view function
+    * At that moment we uses atomic() as context manager
+    * we uses a with block and adds the target codes inside it
+    * with transaction.atomic():
+        order = Order()
+        order.customer_id = 1
+        order.save()
+
+        item = OrderItem()
+        item.order = order
+        item.product_id = 1
+        item.quantity = 1
+        item.unit_price = 10
+        item.save()
+    * now if any of the insertion fails, then the other queries also gets cancelled
+    
+22. Raw SQL Queries
+
+    * query_set = Product.objects.raw('SELECT * FROM products')
+    * this returns a query set, but it is not like the normal query set
+    * the query set methods like filter, annotate etc won't work with this
+    * use this when the ORM query methods gets complex
+
+    * to bypass model layer,
+    * we need to use a different approach
+    * from django.db import connection (module)
+    * and inside view function -> cursor = connection.cursor()
+    * we got a cursor object
+    * cursor.execute('INSERT')
+    * we can use any queries inside.. insert, delete, update
+    * it is independent. We don't need any models to do this
+    * after executing query, cursor.close()
+    * for releasing allocated resources. always do this
+    
+    * it was good to wrap it inside a try final block
+    * close cursor in final block, so that if something goes wrong
+    * we don't end up with an open cursor
+    * but this a little verbose
+    * so use cursor with a 'with' statement
+    * # with connection.cursor as cursor:
+           cursor.execute
+    * here we don't need to explicitly close the cursor
+    * if any exceptions occurs, the cursor automatically gets closed by with block
+
+    * for executing stored procedures instead of sql queries,
+    * use cursor.callproc('get_customers', [1,2])
+    * this is in advanced sql course
+
+# <-- PART 4 - The Admin Site -->
+
+1. Setting up Admin App
+
+    * visit localhost:8080/admin
+    * now create a new admin user
+    * python manage.py createsuperuser
+    * enter username and password
+    * for changing password -> python manage.py changepassword admin
+
+    * now let's change the title 'Django Administration'
+    * go to main urls module of project
+    * from django.contrib import admin -> admin is already imported
+    * so urls is a good place to customize
+    * admin.site.site_header = 'TheName' -> to change title
+    * admin.site.index_title = 'Admin' -> for changing 'site administration' 
+
+2. Regestering Models
+
+    * go to the target app
+    * there is module named admin, for customizing the admin panel
+    * for registering models, first from . import models
+    * then admin.site.register(models.ModelName)
+    * when we open records in collection table (in admin panel)
+    * we see some objects. that's the default representation
+    * to change it, convert object into string (I'm not that sure)
+    * for that, go to models module, and write some code inside target model class
+    * after all the existing code, type def __str__ and press tab
+    *  def __str__(self) -> str:
+           return super().__str__()
+    * remove 'super().__str__()' this
+    * and type self.title
+
+    * now lets sort the records on that table
+    * again go to target model class
+    * after all codes, create an inner class Meta
+    * inside type, ordering = ['title']
+    * this will order records based on it's title
+
+    * def __str__(self) -> str:
+        return f'{self.first_name} {self.last_name}'
+    * by this we can return two column values at the same time
+    * using formatted string
+
+3. Customizing the List Page
+
+    * we can show more columns, make it editable etc
+    * first go to admin module
+    * create a new class ModelNameAdmin (we can call anything but this is best conv)
+    * inheirt it from admin.ModelAdmin
+    * now let's set some attributes to customize the list page
+    * # list_display = ['id','title','unit_price'] -> displays these 3 columns
+    * now pass it while registering that model
+    * admin.site.register(models.ModelName, ModelNameAdmin)
+    * for skipping this registration line, 
+    * use @admin.register(models.ModelName) decorator on top of ModelNameAdmin class
+    * now everything should work
+    * for soting the list by id, click on id
+    * click it once again to sort it in decending order
+    * if we need to turn off sorting using id, click on an arrow icon there
+    * same for all columns
+
+    * another customization is making records editable
+    * # list_editable = ['title','unit_price']
+    * edit columns and click save button on bottom of admin page
+    * # list_per_page = 10 -> shows 10 record on first page
+    * if you want to see the complete list of customization, google Django Model Admin
+    * and check model admin options inside django website
+
+4. Adding Computed Columns
+
+    * suppose, in product table, if the inventory column value is less than 10
+    * we need to show 'Low' there else 'Okay'
+    * define a method name invenoty_status
+    * arguments are self, product
+    * def invenoty_status(self, product)
+        if product.inventory < 10:
+            return 'Low'
+        return 'OK'
+    * and in list_display = ['id','title','unit_price','invenoty_status']
+    * pass the function name in list_display instead of column name
+    * now new column is present in admin panel, but that column is not sortable
+    * for making it sortable, use a decorator for invenoty_status function
+    * @admin.display(ordering='inventory')
+    * here inventory is a column name or an attribute of Product model class
+
+5. Selecting Related Objects (eg: foreign key)
+
+    * eg: we have product table
+    * inside, we have a foreign key named category/collection
+    * we need display that also in admin panel
+    * for that in list_display = ['something','collection']
+    * pass collection (foriegn key name) also there
+    * this might display an object
+    * so to collection table (model class)
+    * and use __str__ method and return self.title (check previous sections)
+
+    * what if we need to display a particular attribute of collection table here
+    * not the title
+    * so for that, we need to create a function of name collection_title(self, product)
+    * here collection is foreign key
+    * _title is an attribute of that model class
+    * product argument is the actual product
+    * inside the function, return product.collection.title
+    * but this will send a lot of queries to database
+    
+    * in orm section, we prefetched related tables using select_related
+    * here also, we have 
+    * # list_select_related = ['collection]
+    * this will pre load all attributes of collection
+    * add this extra line and decrease number of queries
+
+6. Overriding the Base QuerySet
+    * suppose we need display the number of products in a collection
+    * as a new column in admin page table
+    * so as usual, we register the collection admin class
+    * then creates a list name list_display
+    * but we donot have an attribute named products_count in collection
+    * and our requirement is to get the number or count of products in a collection
+
+    * for that def product_count(self, collection):
+    * return collection.product_count
+    * but we donot have attribute like this in collection
+    * this is where we need to overide the queryset
+
+    * so every modeladmin inherited class has a method named get_queryset()
+    * which we can override 
+    * type def get_queryset and enter
+    get_queryset(self, request: HttpRequest) -> QuerySet[_ModelT]:
+        return super().get_queryset(request)
+    * we will get something like this
+    * import HttpRequest and other missing import or else
+    * simply get rid of it, because we don't need that for now
+    get_queryset(self, request):
+        return super().get_queryset(request)
+    * like this
+    * here we are returning the queryset. but we don't want do that immedietly
+    * we need to annotate products_count to it
+    * and using Count object we need to calculate the number of products
+    * pass 'product' as the argument of Count('') object
+    * and that's it.
+    * now, this column is not sortable, django doesnt know how to sort it
+    * so decorate the products_count method with
+    * @admin.display(ordering='products_count')
+
+7. Providing Links to Other Pages
+    * we added new column to display number of products in each collection
+    * now lets add links to these counts, so that when we click them
+    * we need to see the products page
+
+    * so inside products_count method, instead of returning a number (count)
+    * we need to return an html markup with a link and title of product
+    * for returning html from django.utils.html import format_html
+    * it's a function
+    * # after importing, go back to where you stoped by clicking 'control' + '-'
+    * now inside the products_count method, return this
+    return format_html('<a href="https://google.com">{}</a>', collection.products_count)
+    * now let's change the url and put the correct url for products page
+    * for geting the correct url, from django.urls import reverse 
+    * then come to our products_count function, and call reverse function in it
+    * # url =  reverse('admin:app_model_page')
+    * app -> appname we are working (here store)
+    * model -> target model (here product)
+    * page -> target page (here changelist)
+    * we got the url, now replace google.com with this url.
+    * like this
+    return format_html('<a href="{}">{}</a>', url, collection.products_count)
+    * it's working, but filter is applied here. 
+    * for that we need to add query string to url, /url/?collection__id=1 -like this
+    
+    * back to products_count function, we need type multiple lines in url
+    * so wrap it with () this
+    url = (
+        reverse('admin:store_product_changelist') 
+        + '?' 
+        + #code for filtering)
+    * for querystring form django.utils.html import urlencode
+    * call that function inside filtering code part and give a dictionary as argu
+    * query string contains multiple key value pairs, that's why.
+    * this is how it looks like
+    url = (
+        reverse('admin:store_product_changelist') 
+        + '?' 
+        + urlencode({
+            'collection__id': str(collection.id)
+        }))
+    * collection.id returns a number, that's why wrap it in str
+
+8. Add Search to List Page
+
+    * use search_fields attribute inside model admin class
+    * # search_fields = ['first_name','last_name']
+    * but, we need to search for a name that starts with some letter
+    * eg: if I search m, then this will show me all results that contains 'm'
+    * not the names that starts with m
+    * for solving this, use a lookup type.
+    * __startswith
+    * search_fields = ['first_name__startswith','last_name__startswith']
+    * still we have a problem, this is case sensitive. you need to use 'M' 
+    * 'm' will not show any results bcoz, all names starts with capital letter
+    * so use i with the lookup type startswith
+    * __istartswith -> i means insensitive
+
+9. Add Filtering 
+
+    * use list_filter
+    * # list_filter = ['collection','last_update']
+    * this will create a side panel with filtering options
+    * we can filter products by it's collection and last update date
+    * we can create custom filters also
+    * for that create a class with the new filter name
+    * inherit it from admin.SimpleListFilter
+    * and we have more steps, for now skip!
+
+10. Creating Custom Action
+
+    * eg: we have a select option on top, delete selected products
+    * for that define a function with apropriate name
+    * eg: clearing inventory of products to 0
+    * def clear_inventory(self, request, queryset):
+    * request -> http request method
+    * queryset -> all the objects user selected
+    * decorate this function with @admin.action(description='Clear Inventory')
+    * desccription -> the text we want to display in select option
+    * inside the method, we can do anything to update the objects
+    * so queryset.update(inventory=0)
+    * it will return a value
+    * store it in updated_count = queryset.update(inventory=0)
+    * now send a message to admin user by
+    * self.message_user(request, f'{updated_count} products were succesfully updated')
+    * after defining action function, 
+    * and add new attribute "actions = ['clear_inventory']" below that function
+    * we passed the function name as a string here
+
+    * we can also send error messages (in red background)
+    * for that from django.contrib import admin, messages
+    * then as a 3rd argument of self.message_user() pass messages.ERROR
+    * we have many othere messages also in that module
+
+11. Customizing Forms
+
+    * # fields = ['title','slug'] 
+    * this will only show title and slug while adding a new product (in form)
+    * # exclude = ['title']
+    * this will show everything else other than title
+    * # readonly_fields = ['title']
+    * this will make title as non editable
+    * there is a lot in django model admin website
+
+    * suppose, while filling title, the slug field gets filled automatically
+    * eg: product title is Brown Shoes, slug is brown-shoes
+    * but slug have to get filled automatically while we fill title
+    * we need to autopopulate slug field
+    * # prepopulated_fields = { 'fieldname1': ['fieldname2','fieldname3'] }
+    * here it is a dictionary
+    * the key should be the target field which we need to prepopulate (here fieldname1)
+    * the value of this key is a list, so we can combine multiple fields 
+    * for this example, the code should be
+    * prepopulated_fields = { 'slug': ['title'] }
+    * django uses a bit javascript to automatically fill the slug field
+    * don't touch prepopulated fields, once touched, it won't prepopulate any more
+
+    * suppose while choosing the category/collection, there is 100 of them
+    * showing all of them in a dropdown list is horrible
+    * also, retriving all the categories and displaying is an overhead
+    * so we need to use an autocomplete_fields
+    * # autocomplete_fields = ['collection']
+    * collection is a foriegn key. django don't know how to make a search
+    * should I use title.. or something else?
+    * so we need to tell django to search by title 
+    * write that code inside collection admin, as a search_fields
+    * search_fields = ['title'] (inside CollectionAdmin)
+
+12. Adding Data Validation
+
+    * check django validator
+    * most validator codes are written in models module
+    * suppose we need validate the price field while adding product
+    * we won't allow it to be 0 or -ve values
+    * for that, in models module, from django.core.validator import MinValueValidator
+    * there are a lot of validators like this
+    * unit_price = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2,
+        validators=[MinValueValidator(1)])
+    * here 1 is the minimum value, which we can enter here. as 2nd argument,
+    * we can send a message too. If we won't provide a 2nd value, then default message
+    
+    * for making a field optional, 
+    * set blank=True (in model class atrribute)
+    * eg: promotions = models.ManyToManyField(Promotion, blank=True)
+
+13. Editing Children using Inlines
+
+    * suppose we have order model
+    * inside an order, we have different products
+    * while creating a new order, we need to add products also in it
+    * here order is parent and products are children
+    * for implementing this,
+    * go to OrderAdmin class
+    * before that class, create a new class named OrderItemInline
+    * this class should inherit from admin.TabularInline or admin.StackedInline
+    * TabularInline -> table like structure to add product
+    * StackedInline -> stacked structure
+    * inside that, we need specify which model we need to add into Order
+    * That is OrderItem model
+    * model = models.OrderItem
+
+    * now come back to the OrderAdmin class
+    * # vscode shortcut -> control + -
+    * for coming back to the part which we previously edited
+    * inside the class
+    * inlines = [OrderItemInline] (name of the inline class we created just above this)
+    
+    * if you see three rows to placeholders (3 options to add product)
+    * and we only want 1
+    * then go to inline class and add attribute
+    * # extra = 1
+    * # min_num = 1 -> for showing validation error that atleast add one product
+    * one product is necessary
+
+14. Using Generic Relationships
+    pass
+
+15. Extending Pluggable Apps
+    pass (important)
+    plugging different apps together

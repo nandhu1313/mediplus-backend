@@ -1,0 +1,159 @@
+# <-- PART 1 - Building REST APIs -->
+
+1. Resources
+    * they are like objects, eg: products, collections etc
+    * these are accessible by url (uniform resource locator)
+    * eg: https://codewithanandh.com/products
+    * returns all products
+
+2. Resource Representations
+    * skip
+
+6. Django Rest Framework
+    * pip install djangorestframework
+    * in settings.py > installed_apps > 'rest_framework'
+
+7. Creating API Views
+    * By default django has HttpRequest and HttpResponse classes
+    * But rest framework has it's own Response and Request classes (simpler and more powerful)
+    * from rest_framework.decorators import api_view
+    * from rest_framework.response import Response
+
+    * @api_view
+      def the_view_function(request): 
+      // this 'request' is now an instance of Request class of rest_framework
+        return Response("hey") // Response is rest_framework class, it replaced old one
+
+    * if we hit the url in browser, we will get rest framework's detailed view
+    * 1st request method and url
+    * then status code
+    * then allowed methods on that api url
+    * then content type, means what content is inside that response
+    * then Vary, used for caching, talk about in future
+    * then body of response
+
+8. Creating Serializers
+    * First we need to convert model instances into python dictionary (use serializer)
+    * then convert python dictionary into JSON (use JSONRenderer -> render(dict) )
+    * now we can return the JSON as the response of an api request
+
+    * create a file named -> serializers.py
+    * from rest_framework import serializers
+    * class ProductSerializer(serializers.Serializer):
+        id = serializers.IntegerField()
+        title = serializers.CharField(max_length=255)
+        ..
+        ..
+        // thus, give all fields of the Product model, that we need to serialize
+
+9. Serializing Objects
+    * back to views.py
+    * from .models import Product
+    * from .serializers import ProductSerializer
+    * # path('products/<int:id>/') -> set this in urls for getting id
+    * @api_view()
+      def product(request, id):
+        product = Product.objects.get(pk=id)
+        serializer = ProductSerializer(product) // queryset case -> (queryset, many=True)
+        return Response(serializer.data) // serializer.data is the dictionary we got
+        // converting it to JSON is all done under the hood, no need to worry
+
+    * now, another thing, in response body, numbers will be returned as strings
+    * to disable this, go to settings.py > REST_FRAMEWORK = {
+        'COERCE_DECIMAL_TO_STRING': False
+    }
+
+    * # not found response
+    * from rest_framework import status
+    * try: 
+        product = Product.objects.get(pk=id)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+      expect Product.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    * # easier way for not found response
+    * from django.shortcuts import (remove render) get_object_or_404
+    * product = get_object_or_404(Product, pk=id)
+      serializer = ProductSerializer(product)
+      return Response(serializer.data)
+
+10. Custom Serializer Fields
+    * Suppose we don't want our response body to be exact same as Model Class
+    * we need to add custom fields, eg: price, title etc
+    * # so eg:  price = serializers.CharField(max_length=255, source='unit_price')
+    * here the original name in Model class is unit_price, and we used custom name as price
+
+11. Serializing Relationships
+    * pass
+
+12. Model Serializer
+    * used while creating a serializer (but with an easier way)
+
+    * # class ProductSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = Product
+                fields = ['id', 'title', 'price', 'size']
+                price = serializers.IntegerField(source='unit_price')
+
+13. Deserializing Objects
+    * oposite of serializing
+    * used when a client sends data to an api
+
+    * @api_view(['GET', 'POST']) // GET is specified by default, but POST has to set manually
+      def product(request, id):
+        if request.method == 'GET':
+            pass
+      # elif request.method == 'POST':
+            serializer = ProductSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save() // save() does everything automatically
+            // serializer.validated_data
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    * for inserting some fields specifically, 
+    * go to serializer, we have already a function named create(), we need to override that
+    * def create(self, validated_data):
+        product = Product(**validated_data)
+        product.other_field = 'value'
+        product.save()
+        return product
+      
+      // for updation
+      def update(self, instance, validated_data):
+        instance.unit_price = validated_data.get('unit_price')
+        instance.save()
+        return instance
+
+    * # for updating
+    * @api_view(['GET', 'PUT'])
+      def product(request, id):
+        product = get_object_or_404(Product, pk=id)
+        if request.method == 'GET':
+            pass
+      # elif request.method == 'PUT':
+            serializer = ProductSerializer(product, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
+13. Deleting Object
+    * @api_view(['GET', 'PUT', 'DELETE'])
+    def product(request, id):
+        product = get_object_or_404(Product, pk=id)
+        if request.method == 'GET':
+            pass
+        elif request.method == 'PUT':
+            pass
+        elif request.method == 'DELETE':
+            product.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# <-- PART 2 - ADVANCED API CONCEPTS -->
+
+1. Class based views
+    * skip
+
+11. Filtering
+    * 
